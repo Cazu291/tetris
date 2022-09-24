@@ -315,6 +315,43 @@ void rotation_gauche (piece* p, int*** m){
   m[p->tab[6]][p->tab[7]] = temp;
 }
 
+void decalle_gauche (piece* p, int*** m){
+  int min = 10;
+  for (int i = 0; i < 4; i++){
+    if (p->tab[2 * i] < min){
+      min = p->tab[2*i];
+    }
+  }
+  if (min > 0){
+    int* temp = m[p->tab[0]][p->tab[1]];
+    for (int i = 0; i < 4; i++){
+      m[p->tab[2 * i]][p->tab[2 * i + 1]] = m[21][0];
+      p->tab[2 * i + 1] = p->tab[2 * i + 1] - 1;
+    }
+    for (int i = 0; i < 4; i++){
+      m[p->tab[2*i]][p->tab[2*i+1]] = temp;
+    }
+  }
+}
+
+void decalle_droite (piece* p, int*** m){
+  int min = 10;
+  for (int i = 0; i < 4; i++){
+    if (p->tab[2 * i] < min){
+      min = p->tab[2*i];
+    }
+  }
+  if (min > 0){
+    int* temp = m[p->tab[0]][p->tab[1]];
+    for (int i = 0; i < 4; i++){
+      m[p->tab[2 * i]][p->tab[2 * i + 1]] = m[21][0];
+      p->tab[2 * i + 1] = p->tab[2 * i + 1] + 1;
+    }
+    for (int i = 0; i < 4; i++){
+      m[p->tab[2*i]][p->tab[2*i+1]] = temp;
+    }
+  }
+}
 
 int main(){
   //initialise la grille et affiche son contenu (id des pieces dedans)
@@ -365,5 +402,13 @@ int main(){
   
   printf("\nrotation vers la gauche de la pièce\n\n");
   rotation_gauche(p_actuelle, g);
+  print_matrix(g);
+
+  printf("\ndécallage vers la gauche de la pièce\n\n");
+  decalle_gauche(p_actuelle, g);
+  print_matrix(g);
+
+  printf("\ndécallage vers la droite de la pièce\n\n");
+  decalle_droite(p_actuelle, g);
   print_matrix(g);
 }
