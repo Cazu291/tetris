@@ -5,7 +5,7 @@
 
 struct piece{
   int* tab;
-  int* id;
+  int id;
 };
   
 typedef struct carre carre;
@@ -14,23 +14,27 @@ typedef struct piece piece;
 //genere une nouvelle piece dans la grille 
 void genere_piece (piece* p_actuelle, int*** plateau){
   int hasard = rand()%7;
-
+  
   //7 pieces difference de tetris
   if (hasard == 0){
 
-    //ce qui sera dans les infos de p1, infos de la case
+    
     int* p1 = malloc(sizeof(int));
-    // dans aucun cas mettre p[0] = 0 sinon la piece est simplement invisible
+    //si = 0 alors la piece est invisible
     p1[0] = 1;
+    
+    //ce qui sera dans les infos de p1, infos de la case
 
     //mettre a jour les données de p_actuelle
-    p_actuelle->id[0] = 1;
+    p_actuelle->id = 1;
+    //cas particulier de rotation
     p_actuelle->tab[0] = 1;
-    p_actuelle->tab[1] = 3;
+    p_actuelle->tab[1] = 5;
+    
     p_actuelle->tab[2] = 1;
-    p_actuelle->tab[3] = 4;
+    p_actuelle->tab[3] = 3;
     p_actuelle->tab[4] = 1;
-    p_actuelle->tab[5] = 5;
+    p_actuelle->tab[5] = 4;
     p_actuelle->tab[6] = 1;
     p_actuelle->tab[7] = 6;
 
@@ -41,13 +45,17 @@ void genere_piece (piece* p_actuelle, int*** plateau){
     plateau[1][6] = p1;
     
   } else if (hasard == 1){
+    p_actuelle->id = 2;
+
     int* p2 = malloc(sizeof(int));
     p2[0] = 2;
-    p_actuelle->id[0] = 2;
+    
+    //piece centrale pour la rotation
     p_actuelle->tab[0] = 1;
-    p_actuelle->tab[1] = 3;
+    p_actuelle->tab[1] = 4;
+    
     p_actuelle->tab[2] = 1;
-    p_actuelle->tab[3] = 4;
+    p_actuelle->tab[3] = 3;
     p_actuelle->tab[4] = 1;
     p_actuelle->tab[5] = 5;
     p_actuelle->tab[6] = 0;
@@ -57,13 +65,16 @@ void genere_piece (piece* p_actuelle, int*** plateau){
     plateau[1][5] = p2;
     plateau[0][3] = p2;
   } else if (hasard == 2){
+    p_actuelle->id = 3;
+
     int* p3 = malloc(sizeof(int));
     p3[0] = 3;
-    p_actuelle->id[0] = 3;
+    
     p_actuelle->tab[0] = 1;
-    p_actuelle->tab[1] = 3;
+    p_actuelle->tab[1] = 4;
+    
     p_actuelle->tab[2] = 1;
-    p_actuelle->tab[3] = 4;
+    p_actuelle->tab[3] = 3;
     p_actuelle->tab[4] = 1;
     p_actuelle->tab[5] = 5;
     p_actuelle->tab[6] = 0;
@@ -73,30 +84,36 @@ void genere_piece (piece* p_actuelle, int*** plateau){
     plateau[1][5] = p3;
     plateau[0][5] = p3;
   } else if (hasard == 3){
+
     int* p4 = malloc(sizeof(int));
     p4[0] = 4;
-    p_actuelle->id[0] = 4;
+    
+    //cas particulier de rotation
+    p_actuelle->id = 4;
     p_actuelle->tab[0] = 1;
     p_actuelle->tab[1] = 4;
     p_actuelle->tab[2] = 1;
     p_actuelle->tab[3] = 5;
-    p_actuelle->tab[4] = 0;
-    p_actuelle->tab[5] = 5;
     p_actuelle->tab[6] = 0;
     p_actuelle->tab[7] = 4;
+    p_actuelle->tab[4] = 0;
+    p_actuelle->tab[5] = 5;
     plateau[1][4] = p4;
     plateau[1][5] = p4;
     plateau[0][5] = p4;
     plateau[0][4] = p4;
   } else if (hasard == 4){
+    p_actuelle->id = 5;
+
     int* p5 = malloc(sizeof(int));
     p5[0] = 5;
-    p_actuelle->id[0] = 5;
-    p_actuelle->tab[0] = 1;
-    p_actuelle->tab[1] = 3;
+    
+    p_actuelle->tab[0] = 0;
+    p_actuelle->tab[1] = 4;
+    
     p_actuelle->tab[2] = 1;
-    p_actuelle->tab[3] = 4;
-    p_actuelle->tab[4] = 0;
+    p_actuelle->tab[3] = 3;
+    p_actuelle->tab[4] = 1;
     p_actuelle->tab[5] = 4;
     p_actuelle->tab[6] = 0;
     p_actuelle->tab[7] = 5;
@@ -105,13 +122,16 @@ void genere_piece (piece* p_actuelle, int*** plateau){
     plateau[0][5] = p5;
     plateau[0][4] = p5;
   } else if (hasard == 5){
+    p_actuelle->id = 6;
+
     int* p6 = malloc(sizeof(int));
     p6[0] = 6;
-    p_actuelle->id[0] = 6;
+    
     p_actuelle->tab[0] = 1;
-    p_actuelle->tab[1] = 3;
+    p_actuelle->tab[1] = 4;
+    
     p_actuelle->tab[2] = 1;
-    p_actuelle->tab[3] = 4;
+    p_actuelle->tab[3] = 3;
     p_actuelle->tab[4] = 1;
     p_actuelle->tab[5] = 5;
     p_actuelle->tab[6] = 0;
@@ -121,13 +141,16 @@ void genere_piece (piece* p_actuelle, int*** plateau){
     plateau[1][5] = p6;
     plateau[0][4] = p6;
   } else if (hasard == 6){
+    p_actuelle->id = 7;
+
     int* p7 = malloc(sizeof(int));
     p7[0] = 7;
-    p_actuelle->id[0] = 7;
+    
     p_actuelle->tab[0] = 1;
-    p_actuelle->tab[1] = 5;
+    p_actuelle->tab[1] = 4;
+    
     p_actuelle->tab[2] = 1;
-    p_actuelle->tab[3] = 4;
+    p_actuelle->tab[3] = 5;
     p_actuelle->tab[4] = 0;
     p_actuelle->tab[5] = 3;
     p_actuelle->tab[6] = 0;
@@ -141,14 +164,14 @@ void genere_piece (piece* p_actuelle, int*** plateau){
 
 //creation de grille de tetris 10 * 20
 int*** grille(){
-  int*** grid = malloc(sizeof(int**) * 21); //tetris en 10c x 20l, rajoute 1 ligne au cas ou 2e ligne pleine
-  for (int i = 0; i < 21; i++){
+  int* p = malloc(sizeof(int));
+  p[0] = 0;
+  int*** grid = malloc(sizeof(int**) * 22); //tetris en 10c x 20l, rajoute 1 ligne au dessus au cas où 2e ligne pleine et 1 ligne au dessous pour toujours pouvoir reprendre le pointeur vers 0
+  for (int i = 0; i < 22; i++){
     int** c = malloc(sizeof(int*) * 10);
     grid[i] = c;
     for (int j = 0; j < 10; j++){
-      int* p = malloc(sizeof(int));
-      p[0] = 0;
-      grid[i][j] = p;
+      grid[i][j] = p;    //tjrs le même pointeur pour une case avec 0, evite de free a chaque fois
     }
   }
   return grid;
@@ -183,25 +206,115 @@ void descente (piece* p, int*** m){ //fait descendre la piece actuelle 1 fois et
     int x = p->tab[2*i];
     int y = p->tab[2*i+1];
     if (x < 20){
-      if ((m[x+1][y][0] == 0)||(m[x+1][y] == m[x][y])){
+      if ((m[x+1][y][0] == 0)||(m[x+1][y] == m[x][y])){ // verifie que la piece a la place de descendre
 	total++;
       }
     }
   }
   if (total == 4){
-      for (int i = 0; i<4; i++){
-	int x = p->tab[2*i];
-	int y = p->tab[2*i+1];
-	m[x+1][y] = m[x][y];
-	p->tab[2*i] = x + 1;
-	int* c = malloc(sizeof(int));
-	c[0] = 0;
-	m[x][y] = c;
-      }
+    //sauvegarde la precedente valeur
+    int* temp = m[p->tab[0]][p->tab[1]];
+    //clean la matrice
+    m[p->tab[0]][p->tab[1]] = m[21][0];
+    m[p->tab[2]][p->tab[3]] = m[21][0];
+    m[p->tab[4]][p->tab[5]] = m[21][0];
+    m[p->tab[6]][p->tab[7]] = m[21][0];
+    //remet la valeur dans les nouvelles cases
+    m[p->tab[0] + 1][p->tab[1]] = temp;
+    m[p->tab[2] + 1][p->tab[3]] = temp;
+    m[p->tab[4] + 1][p->tab[5]] = temp;
+    m[p->tab[6] + 1][p->tab[7]] = temp;
+    //actualise les coordonnees de p actuelle
+    p->tab[0] = p->tab[0] + 1;
+    p->tab[2] = p->tab[2] + 1;
+    p->tab[4] = p->tab[4] + 1;
+    p->tab[6] = p->tab[6] + 1;
   } else {
     genere_piece(p, m);
   }
 }
+
+void rotation_droite (piece* p, int*** m){
+
+  //enleve la piece temporairement et stocke sa valeur en attendant
+  int* temp = m[p->tab[0]][p->tab[1]];
+  m[p->tab[0]][p->tab[1]] = m[21][0];
+  m[p->tab[2]][p->tab[3]] = m[21][0];
+  m[p->tab[4]][p->tab[5]] = m[21][0];
+  m[p->tab[6]][p->tab[7]] = m[21][0];
+
+  //garde les valeurs centrales
+  int i = p->tab[0];
+  int j = p->tab[1];
+  if ((p->tab[0] < 20 && p->tab[1] < 9 && p->tab[0] > 0 && p->tab[1] > 0) || (p->id == 1 && p->tab[0] > 1 && p->tab[1] > 1 && p->tab[0] < 20 && p->tab[1] < 9)){
+    //si la piece est autre que la barre et le carre alors il lui faut un carré de 3x3 autour de la piece centrale pour tourner, toujours
+    //si la piece est la barre alors il lui faut 2 carres libres a gauche et en haut et 1 a droite et en bas
+    for (int k = 0; k < 4; k++){
+      //calcule la distance entre x et i et y et j
+      int dist_x = p->tab[k *2] - i;
+      int dist_y = p->tab[k *2 +1] - j;
+      //formule trouvée pour tourner la pièce a gauche ou a droite
+      if (p->id == 1){
+	p->tab[2 *k] = i + dist_y;
+	p->tab[2 *k +1] = j + dist_x;
+      } else if (p->id != 4){
+	p->tab[2 *k] = i + dist_y;
+	p->tab[2 *k +1] = j - dist_x;
+      }
+    }
+    for (int k = 0; k < 4; k++){
+      m[p->tab[2 *k]][p->tab[2 *k +1]] = m[21][0];
+    }
+  }
+  
+  //replace la piece dans le tableau, a sa nouvelle place
+  m[p->tab[0]][p->tab[1]] = temp;
+  m[p->tab[2]][p->tab[3]] = temp;
+  m[p->tab[4]][p->tab[5]] = temp;
+  m[p->tab[6]][p->tab[7]] = temp;
+}
+
+
+void rotation_gauche (piece* p, int*** m){
+
+  //enleve la piece temporairement et stocke sa valeur en attendant
+  int* temp = m[p->tab[0]][p->tab[1]];
+  m[p->tab[0]][p->tab[1]] = m[21][0];
+  m[p->tab[2]][p->tab[3]] = m[21][0];
+  m[p->tab[4]][p->tab[5]] = m[21][0];
+  m[p->tab[6]][p->tab[7]] = m[21][0];
+
+  //garde les valeurs centrales
+  int i = p->tab[0];
+  int j = p->tab[1];
+  if ((p->tab[0] < 20 && p->tab[1] < 9 && p->tab[0] > 0 && p->tab[1] > 0) || (p->id == 1 && p->tab[0] > 1 && p->tab[1] > 1 && p->tab[0] < 20 && p->tab[1] < 9)){
+    //si la piece est autre que la barre et le carre alors il lui faut un carré de 3x3 autour de la piece centrale pour tourner, toujours
+    //si la piece est la barre alors il lui faut 2 carres libres a gauche et en haut et 1 a droite et en bas
+    for (int k = 0; k < 4; k++){
+      //calcule la distance entre x et i et y et j
+      int dist_x = p->tab[k *2] - i;
+      int dist_y = p->tab[k *2 +1] - j;
+      //formule trouvée pour tourner la pièce a gauche ou a droite
+      if (p->id == 1){
+	p->tab[2 *k] = i + dist_y;
+	p->tab[2 *k +1] = j + dist_x;
+      } else if (p->id != 4){
+	p->tab[2 *k] = i - dist_y;
+	p->tab[2 *k +1] = j + dist_x;
+      }
+    }
+    for (int k = 0; k < 4; k++){
+      m[p->tab[2 *k]][p->tab[2 *k +1]] = m[21][0];
+    }
+  }
+  
+  //replace la piece dans le tableau, a sa nouvelle place
+  m[p->tab[0]][p->tab[1]] = temp;
+  m[p->tab[2]][p->tab[3]] = temp;
+  m[p->tab[4]][p->tab[5]] = temp;
+  m[p->tab[6]][p->tab[7]] = temp;
+}
+
 
 int main(){
   //initialise la grille et affiche son contenu (id des pieces dedans)
@@ -213,8 +326,7 @@ int main(){
   //créé la piece actuelle
   piece* p_actuelle = malloc(sizeof(piece));
   int* coor = malloc(sizeof(int)*8);
-  int* identifiant = malloc(sizeof(int));
-  p_actuelle->id = identifiant;
+  p_actuelle->id = 8;
   p_actuelle->tab = coor;
 
   //affiche la grille apres l'ajout d'une pièce random
@@ -223,7 +335,7 @@ int main(){
   print_matrix(g);
 
   //affiche le contenu de la piece actuelle (id, corrdonnées des cases)
-  printf("\nid: %d\n", p_actuelle->id[0]);
+  printf("\nid: %d\n", p_actuelle->id);
   printf("case 1: %d %d\n", p_actuelle->tab[0], p_actuelle->tab[1]);
   printf("case 2: %d %d\n", p_actuelle->tab[2], p_actuelle->tab[3]);
   printf("case 3: %d %d\n", p_actuelle->tab[4], p_actuelle->tab[5]);
@@ -236,7 +348,22 @@ int main(){
   printf("\nmatrice avec pièce descendue\n\n");
   print_matrix(g);
 
-  printf("\ndescente jusqu'a bloquer la piece\n\n");
+  printf("\ndescente jusqu'a générer la nouvelle piece et la descendre d'une case\n\n");
   descente(p_actuelle, g);
+  descente(p_actuelle, g);
+  print_matrix(g);
+
+  printf("\nrotation vers la droite de la pièce avec la place\n\n");
+  rotation_droite(p_actuelle, g);
+  print_matrix(g);
+
+  printf("\n 3 rotation vers la droite de la pièce\n\n");
+  rotation_droite(p_actuelle, g);
+  rotation_droite(p_actuelle, g);
+  rotation_droite(p_actuelle, g);
+  print_matrix(g);
+  
+  printf("\nrotation vers la gauche de la pièce\n\n");
+  rotation_gauche(p_actuelle, g);
   print_matrix(g);
 }
