@@ -335,13 +335,13 @@ void decalle_gauche (piece* p, int*** m){
 }
 
 void decalle_droite (piece* p, int*** m){
-  int min = 10;
+  int max = 0;
   for (int i = 0; i < 4; i++){
-    if (p->tab[2 * i] < min){
-      min = p->tab[2*i];
+    if (p->tab[2 * i] > max){
+      max = p->tab[2*i];
     }
   }
-  if (min > 0){
+  if (max < 10){
     int* temp = m[p->tab[0]][p->tab[1]];
     for (int i = 0; i < 4; i++){
       m[p->tab[2 * i]][p->tab[2 * i + 1]] = m[21][0];
