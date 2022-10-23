@@ -166,7 +166,7 @@ void genere_piece (piece* p_actuelle, int*** plateau){
 int*** grille(){
   int* p = malloc(sizeof(int));
   p[0] = 0;
-  int*** grid = malloc(sizeof(int**) * 22); //tetris en 10c x 20l, rajoute 1 ligne au dessus au cas où 2e ligne pleine et 1 ligne au dessous pour toujours pouvoir reprendre le pointeur vers 0
+  int*** grid = malloc(sizeof(int**) * 22); //tetris en 10c x 20l, rajoute 1 ligne au dessus au cas où la 2e ligne est pleine et 1 ligne au dessous pour toujours pouvoir reprendre le pointeur vers 0
   for (int i = 0; i < 22; i++){
     int** c = malloc(sizeof(int*) * 10);
     grid[i] = c;
@@ -318,15 +318,15 @@ void rotation_gauche (piece* p, int*** m){
 void decalle_gauche (piece* p, int*** m){
   int min = 10;
   for (int i = 0; i < 4; i++){
-    if (p->tab[2 * i] < min){
-      min = p->tab[2*i];
+    if (p->tab[2*i+1] < min){
+      min = p->tab[2*i+1];
     }
   }
   if (min > 0){
     int* temp = m[p->tab[0]][p->tab[1]];
     for (int i = 0; i < 4; i++){
-      m[p->tab[2 * i]][p->tab[2 * i + 1]] = m[21][0];
-      p->tab[2 * i + 1] = p->tab[2 * i + 1] - 1;
+      m[p->tab[2*i]][p->tab[2*i+1]] = m[21][0];
+      p->tab[2*i+1] = p->tab[2*i+1] - 1;
     }
     for (int i = 0; i < 4; i++){
       m[p->tab[2*i]][p->tab[2*i+1]] = temp;
@@ -337,19 +337,49 @@ void decalle_gauche (piece* p, int*** m){
 void decalle_droite (piece* p, int*** m){
   int max = 0;
   for (int i = 0; i < 4; i++){
-    if (p->tab[2 * i] > max){
-      max = p->tab[2*i];
+    if (p->tab[2*i+1] > max){
+      max = p->tab[2*i+1];
     }
   }
   if (max < 10){
     int* temp = m[p->tab[0]][p->tab[1]];
     for (int i = 0; i < 4; i++){
-      m[p->tab[2 * i]][p->tab[2 * i + 1]] = m[21][0];
-      p->tab[2 * i + 1] = p->tab[2 * i + 1] + 1;
+      m[p->tab[2*i]][p->tab[2*i+1]] = m[21][0];
+      p->tab[2*i+1] = p->tab[2*i+1] + 1;
     }
     for (int i = 0; i < 4; i++){
       m[p->tab[2*i]][p->tab[2*i+1]] = temp;
     }
+  }
+}
+
+void chute(piece* p, int*** m){
+  int* temp = m[p->tab[0]][p->tab[1]];
+  int max_coor = 0;
+  //on efface les pièces du plateau
+  for (int i = 0; i < 4; i++){
+    m[p->tab[2*i]][p->tab[2*i+1]] = m[21][0];
+  }
+  int hauteur = 20;
+  for (int i = 0; i < 4; i++){
+    //on cherche quelle piece est la plus basse (donc de coordonnée maximale)
+    if  (p->tab[2*i] > max_coor){
+      max_coor = p->tab[2*i];
+    }
+    //on cherche pour chaque x le plus haut y tel que la case de coordonnées x, y est libre
+    int h = 0;
+    while (h < 20 && *m[h+1][p->tab[2*i+1]] == 0){
+      h++;
+    }
+    //après avoir calculé le y de chaque x, on cherche le plus petit de tous (le plus haut)
+    if (h < hauteur){
+      hauteur = h;
+    }
+  }
+  int distance = hauteur - max_coor; // la distance entre le pt le plus bas et la plus haute case libre
+  for (int i = 0; i < 4; i++){
+    p->tab[2*i] = p->tab[2*i] + distance;
+    m[p->tab[2*i]][p->tab[2*i+1]] = temp;
   }
 }
 
@@ -378,7 +408,7 @@ int main(){
   printf("case 3: %d %d\n", p_actuelle->tab[4], p_actuelle->tab[5]);
   printf("case 4: %d %d\n\n", p_actuelle->tab[6], p_actuelle->tab[7]);
 
-  //affiche après avoir descenu une pièce
+  //affiche après avoir descendu une pièce
   for (int i = 0; i < 19; i++){
     descente(p_actuelle, g);
   }
@@ -410,5 +440,14 @@ int main(){
 
   printf("\ndécallage vers la droite de la pièce\n\n");
   decalle_droite(p_actuelle, g);
+  print_matrix(g);
+  
+  printf("\nchute de la pièce\n\n");
+  chute(p_actuelle, g);
+  print_matrix(g);
+  
+  printf("\nchute instantanée de la 2e pièce\n\n");
+  descente(p_actuelle, g);
+  chute(p_actuelle, g);
   print_matrix(g);
 }
