@@ -383,6 +383,67 @@ void chute(piece* p, int*** m){
   }
 }
 
+void percole_bas(piece* p, int*** m, int l){
+  int* temp = m[p->tab[0]][p->tab[1]];
+  for (int h = l; h > 0; h--){
+    for (int i = 0; i < 10; i++){
+      m[h][i] = m[h-1][i];
+      m[h-1][i] = m[21][0];
+    }
+  }
+  for (int i = 0; i < 10; i++){
+    m[0][i] = m[21][0];
+  }
+  for (int i = 0; i < 4; i++){
+    m[p->tab[2*i] + 1][p->tab[2*i+1]] = m[21][0];
+    m[p->tab[2*i]][p->tab[2*i+1]] = temp;
+  }
+}
+
+bool ligne_pleine(int*** m, int l){ //verifie si une ligne est remplie
+  int total = 0;
+  for (int i = 0; i < 10; i++){
+    if (*m[l][i] == 0){
+      total++;
+    }
+  }
+  return total == 10;
+}
+
+bool present_ligne (int*** m, int* piece, int l){ //vérifie si une piece est presente dans les lignes autour
+  if (l > 0 && l < 19){
+    int c = 0;
+    while(c < 10 && m[l-1][c] != piece && m[l+1][c] != piece){
+      c++;
+    }
+    if (c == 10){
+      return false;
+    }
+    return true;
+  }
+  if (l == 0){
+    int c = 0;
+    while(c < 10 && m[l+1][c] != piece){
+      c++;
+    }
+    if (c == 10){
+      return false;
+    }
+    return true;
+  }
+  if (l == 19){
+    int c = 0;
+    while(c < 10 && m[l-1][c] != piece){
+      c++;
+    }
+    if (c == 10){
+      return false;
+    }
+    return true;
+  }
+  return false;
+}
+
 int main(){
   //initialise la grille et affiche son contenu (id des pieces dedans)
   int*** g = grille();
@@ -449,5 +510,17 @@ int main(){
   printf("\nchute instantanée de la 2e pièce\n\n");
   descente(p_actuelle, g);
   chute(p_actuelle, g);
+  print_matrix(g);
+  
+  printf("\nprésent ligne\n");
+  bool present = present_ligne(g, g[p_actuelle->tab[0]][p_actuelle->tab[1]], p_actuelle->tab[0]);
+  printf("%d\n\n", present);
+  
+  printf("\nligne pleine\n");
+  bool pleine = ligne_pleine(g, 19);
+  printf("%d\n\n", pleine);
+
+  printf("\npercole bas\n\n");
+  percole_bas(p_actuelle, g, 19);
   print_matrix(g);
 }
