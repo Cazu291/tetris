@@ -2,15 +2,22 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
+#include <ncurses.h>
+#include <unistd.h>
 
 struct piece{
   int* tab;
   int id;
 };
-  
-typedef struct carre carre;
+
 typedef struct piece piece;
-  
+
+void affiche_piece (piece* p){
+  for (int i = 0; i < 4; i++){
+    printf("i, j: %d, %d\n\r", p->tab[2*i], p->tab[2*i+1]);
+  }
+}
+
 //genere une nouvelle piece dans la grille 
 void genere_piece (piece* p_actuelle, int*** plateau){
   int hasard = rand()%7;
@@ -183,7 +190,7 @@ void print_matrix (int*** m){
   for (int j=0; j<10; j++){
     printf("%d ", j);
   }
-  printf("\n");
+  printf("\n\r");
 
   //affiche le n de ligne
   for (int i=0; i<21; i++){
@@ -194,11 +201,45 @@ void print_matrix (int*** m){
 
     //affiche la valeur en i j
     for (int j=0; j<10; j++){
-      printf("%d ", m[i][j][0]);
+      char c = m[i][j][0] == 0? '-' : '0';
+      printf("%c ", c);
     }
-    printf("\n");
+    printf("\n\r");
   }
 }
+
+
+void percole_bas(piece* p, int*** m, int l){ // descend toutes les lignes au dessus de l de un cran sauf la piece actuelle
+  int* temp = m[p->tab[0]][p->tab[1]];
+  for (int h = l; h > 0; h--){
+    for (int i = 0; i < 10; i++){
+      m[h][i] = m[h-1][i];
+      m[h-1][i] = m[21][0];
+    }
+  }
+  for (int i = 3; i >= 0; i--){
+    m[p->tab[2*i] + 1][p->tab[2*i+1]] = m[21][0];
+    m[p->tab[2*i]][p->tab[2*i+1]] = temp;
+  }
+}
+
+bool ligne_pleine(int*** m, int l){ //verifie si une ligne est remplie
+  int total = 0;
+  for (int i = 0; i < 10; i++){
+    if (*m[l][i] != 0){
+      total++;
+    }
+  }
+  return total == 10;
+}
+
+void update(piece* p, int*** m, int l){
+  if (ligne_pleine(m, l)){
+    percole_bas(p, m, l);
+  }
+  printf("update ligne %d\n\r", l);
+}
+
 
 void descente (piece* p, int*** m){ //fait descendre la piece actuelle 1 fois et si besoin créé une nouvelle pièce
   int total = 0; //fais le total des pièces pouvant être descendues, si tot = 4 alors le tout descend
@@ -230,6 +271,19 @@ void descente (piece* p, int*** m){ //fait descendre la piece actuelle 1 fois et
     p->tab[4] = p->tab[4] + 1;
     p->tab[6] = p->tab[6] + 1;
   } else {
+    int max = 0;
+    int min = 20;
+    for (int i = 0; i < 4; i++){ // regarde pour quelles lignes il faut vérifier si elle est pleine
+      if (p->tab[2*i] > max){
+	max = p->tab[2*i];
+      } else if (p->tab[2*i] < min){
+	min = p->tab[2*i];
+      }
+    }
+    for (int i = max; i < min; i++){
+      printf("%d %d\n\r", min, max);
+      update(p, m, i); //update toutes les lignes entre la plus haute et la plus basse des lignes
+    }
     genere_piece(p, m);
   }
 }
@@ -283,11 +337,40 @@ void rotation_gauche (piece* p, int*** m){
   m[p->tab[2]][p->tab[3]] = m[21][0];
   m[p->tab[4]][p->tab[5]] = m[21][0];
   m[p->tab[6]][p->tab[7]] = m[21][0];
-
+  
+  int max_height = 22;
+  int max_left = 10;
+  bool vertical = true;
+  vertical = vertical && (p->tab[1] != p->tab[3]);
+    
+  for (int i = 0; i < 4; i++){
+    if (p->tab[2*i+1]< max_height){
+      max_height = p->tab[2*i+1];
+    }
+    if (max_left < p->tab[2*i]){
+      max_left = p->tab[2*i];
+    }
+  }
+  
   //garde les valeurs centrales
-  int i = p->tab[0];
-  int j = p->tab[1];
-  if ((p->tab[0] < 20 && p->tab[1] < 9 && p->tab[0] > 0 && p->tab[1] > 0) || (p->id == 1 && p->tab[0] > 1 && p->tab[1] > 1 && p->tab[0] < 20 && p->tab[1] < 9)){
+  int i;
+  int j;
+  i = p->tab[0];
+  j = p->tab[1];
+  // la rotation de la grande barre envoie le carré en trop (la barre ne rentre pas dans un bloc 3x3, un carré sort) soit à gauchedu carré, soit en haut, il faut vérifier que cela ne sort pas du cadre.
+  bool b1 = (p->tab[0] < 20 && p->tab[1] < 9 && p->tab[0] > 0 && p->tab[1] > 0) || (p->id == 1 && p->tab[0] > 1 && p->tab[1] > 1 && p->tab[0] < 20 && p->tab[1] < 9); // savoir si la piece peut tourner
+  bool b2 = (p->id == 1 && ((vertical && max_left > 1) || (!vertical && max_height > 1))) || (p->id != 1);
+  bool peut_tourner;
+  if (p->id == 1){
+    for (int k = 0; k < 4; k++){
+      int dist_x = p->tab[k *2] - i;
+      int dist_y = p->tab[k *2 +1] - j;
+      // sans ça, le cas de base où la pièce de 4 en longueur est en haut donne dist_y négatif et dist_y + y négatif, donc le programme renvoie une seg fault. D'où on verifie que toutes les valeurs sont > 0
+      peut_tourner = peut_tourner && (p->tab[2 *k] > -(i + dist_y));
+      peut_tourner = peut_tourner && (p->tab[2 *k +1] > -(j + dist_x));
+    }
+  }   
+  if (b1 && b2 && peut_tourner){
     //si la piece est autre que la barre et le carre alors il lui faut un carré de 3x3 autour de la piece centrale pour tourner, toujours
     //si la piece est la barre alors il lui faut 2 carres libres a gauche et en haut et 1 a droite et en bas
     for (int k = 0; k < 4; k++){
@@ -315,7 +398,7 @@ void rotation_gauche (piece* p, int*** m){
   m[p->tab[6]][p->tab[7]] = temp;
 }
 
-void decalle_gauche (piece* p, int*** m){
+void decalle_gauche (piece* p, int*** m){ // decalle piece a gauche
   int min = 10;
   for (int i = 0; i < 4; i++){
     if (p->tab[2*i+1] < min){
@@ -334,14 +417,14 @@ void decalle_gauche (piece* p, int*** m){
   }
 }
 
-void decalle_droite (piece* p, int*** m){
+void decalle_droite (piece* p, int*** m){ // decalle piece a droite
   int max = 0;
   for (int i = 0; i < 4; i++){
     if (p->tab[2*i+1] > max){
-      max = p->tab[2*i+1];
+      max = p->tab[2*i+1]; //verifie si chaque case de la piece peut aller a droite
     }
   }
-  if (max < 10){
+  if (max < 9){
     int* temp = m[p->tab[0]][p->tab[1]];
     for (int i = 0; i < 4; i++){
       m[p->tab[2*i]][p->tab[2*i+1]] = m[21][0];
@@ -353,7 +436,7 @@ void decalle_droite (piece* p, int*** m){
   }
 }
 
-void chute(piece* p, int*** m){
+void chute(piece* p, int*** m){ //fait tomber la piece instantannement
   int* temp = m[p->tab[0]][p->tab[1]];
   int max_coor = 0;
   //on efface les pièces du plateau
@@ -372,8 +455,8 @@ void chute(piece* p, int*** m){
       h++;
     }
     //après avoir calculé le y de chaque x, on cherche le plus petit de tous (le plus haut)
-    if (h < hauteur){
-      hauteur = h;
+    if (h - p->tab[2*i+1] < hauteur){ // on calcule h - y (si deux pieces peuvent s'imbriquer l'une dans l'autre parfaitement, on peut pas simplement calculer le max et le  min deux deux pieces, sinon il est possible que le x du plus haut de celle du bas ne corresponde pas avec le x du plus bas de celle du haut) (exmple superposer un t et un u, ça marche pas sinon)
+      hauteur = h - p->tab[2*i+1];
     }
   }
   int distance = hauteur - max_coor; // la distance entre le pt le plus bas et la plus haute case libre
@@ -383,73 +466,46 @@ void chute(piece* p, int*** m){
   }
 }
 
-void percole_bas(piece* p, int*** m, int l){
-  int* temp = m[p->tab[0]][p->tab[1]];
-  for (int h = l; h > 0; h--){
-    for (int i = 0; i < 10; i++){
-      m[h][i] = m[h-1][i];
-      m[h-1][i] = m[21][0];
-    }
+void entree(piece* p, int*** m, int clavier){
+  switch(clavier){
+  case 'q':
+    decalle_gauche(p, m);
+    break;
+  case 'd':
+    decalle_droite(p, m);
+    break;
+  case ' ':
+    chute(p, m);
+    break;
+  case 'z':
+    rotation_gauche(p, m);
+    break;
+  case 's':
+    descente(p, m);
+    break;
   }
-  for (int i = 0; i < 10; i++){
-    m[0][i] = m[21][0];
-  }
-  for (int i = 0; i < 4; i++){
-    m[p->tab[2*i] + 1][p->tab[2*i+1]] = m[21][0];
-    m[p->tab[2*i]][p->tab[2*i+1]] = temp;
-  }
+  //system("clear");
+  print_matrix(m);
 }
 
-bool ligne_pleine(int*** m, int l){ //verifie si une ligne est remplie
-  int total = 0;
-  for (int i = 0; i < 10; i++){
-    if (*m[l][i] == 0){
-      total++;
+int max_height(piece* p){
+  int max = 0;
+  for (int i = 0; i<4; i++){
+    if (p->tab[2*i] > max){
+      max = p->tab[2*i];
     }
   }
-  return total == 10;
-}
-
-bool present_ligne (int*** m, int* piece, int l){ //vérifie si une piece est presente dans les lignes autour
-  if (l > 0 && l < 19){
-    int c = 0;
-    while(c < 10 && m[l-1][c] != piece && m[l+1][c] != piece){
-      c++;
-    }
-    if (c == 10){
-      return false;
-    }
-    return true;
-  }
-  if (l == 0){
-    int c = 0;
-    while(c < 10 && m[l+1][c] != piece){
-      c++;
-    }
-    if (c == 10){
-      return false;
-    }
-    return true;
-  }
-  if (l == 19){
-    int c = 0;
-    while(c < 10 && m[l-1][c] != piece){
-      c++;
-    }
-    if (c == 10){
-      return false;
-    }
-    return true;
-  }
-  return false;
+  return max;
 }
 
 int main(){
   //initialise la grille et affiche son contenu (id des pieces dedans)
+  
   int*** g = grille();
   srand(time(NULL));
-  printf("matrice init\n\n");
-  print_matrix (g);
+  initscr();
+  nodelay(stdscr, 1);
+  bool game = true;
 
   //créé la piece actuelle
   piece* p_actuelle = malloc(sizeof(piece));
@@ -457,70 +513,25 @@ int main(){
   p_actuelle->id = 8;
   p_actuelle->tab = coor;
 
-  //affiche la grille apres l'ajout d'une pièce random
+  int new_timer = time(NULL);
+  int old_timer = time(NULL);
+  char c;
+
   genere_piece(p_actuelle, g);
-  printf("\nmatrice avec nouvelle piece\n\n");
-  print_matrix(g);
-
-  //affiche le contenu de la piece actuelle (id, corrdonnées des cases)
-  printf("\nid: %d\n", p_actuelle->id);
-  printf("case 1: %d %d\n", p_actuelle->tab[0], p_actuelle->tab[1]);
-  printf("case 2: %d %d\n", p_actuelle->tab[2], p_actuelle->tab[3]);
-  printf("case 3: %d %d\n", p_actuelle->tab[4], p_actuelle->tab[5]);
-  printf("case 4: %d %d\n\n", p_actuelle->tab[6], p_actuelle->tab[7]);
-
-  //affiche après avoir descendu une pièce
-  for (int i = 0; i < 19; i++){
-    descente(p_actuelle, g);
+  
+  while(game){
+    c = getch();
+    if (c != ERR){
+      entree(p_actuelle, g, c);
+    }
+    new_timer = time(NULL);
+    if (new_timer - old_timer > 1){
+      old_timer = new_timer;
+      descente(p_actuelle, g);
+      int l = max_height(p_actuelle);
+      update(p_actuelle, g, l);
+      //system("clear");
+      print_matrix(g);
+    }
   }
-  printf("\nmatrice avec pièce descendue\n\n");
-  print_matrix(g);
-
-  printf("\ndescente jusqu'a générer la nouvelle piece et la descendre d'une case\n\n");
-  descente(p_actuelle, g);
-  descente(p_actuelle, g);
-  print_matrix(g);
-
-  printf("\nrotation vers la droite de la pièce avec la place\n\n");
-  rotation_droite(p_actuelle, g);
-  print_matrix(g);
-
-  printf("\n 3 rotation vers la droite de la pièce\n\n");
-  rotation_droite(p_actuelle, g);
-  rotation_droite(p_actuelle, g);
-  rotation_droite(p_actuelle, g);
-  print_matrix(g);
-  
-  printf("\nrotation vers la gauche de la pièce\n\n");
-  rotation_gauche(p_actuelle, g);
-  print_matrix(g);
-
-  printf("\ndécallage vers la gauche de la pièce\n\n");
-  decalle_gauche(p_actuelle, g);
-  print_matrix(g);
-
-  printf("\ndécallage vers la droite de la pièce\n\n");
-  decalle_droite(p_actuelle, g);
-  print_matrix(g);
-  
-  printf("\nchute de la pièce\n\n");
-  chute(p_actuelle, g);
-  print_matrix(g);
-  
-  printf("\nchute instantanée de la 2e pièce\n\n");
-  descente(p_actuelle, g);
-  chute(p_actuelle, g);
-  print_matrix(g);
-  
-  printf("\nprésent ligne\n");
-  bool present = present_ligne(g, g[p_actuelle->tab[0]][p_actuelle->tab[1]], p_actuelle->tab[0]);
-  printf("%d\n\n", present);
-  
-  printf("\nligne pleine\n");
-  bool pleine = ligne_pleine(g, 19);
-  printf("%d\n\n", pleine);
-
-  printf("\npercole bas\n\n");
-  percole_bas(p_actuelle, g, 19);
-  print_matrix(g);
 }
